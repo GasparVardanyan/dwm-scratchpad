@@ -1,0 +1,157 @@
+diff '--color=auto' --unified --recursive --text dwm-6.2/config.def.h dwm/config.def.h
+--- dwm-6.2/config.def.h	2019-02-02 16:55:28.000000000 +0400
++++ dwm/config.def.h	2019-10-07 15:47:06.592720422 +0400
+@@ -21,6 +21,10 @@
+ /* tagging */
+ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+ 
++/* scratchpad */
++static const unsigned scratchpad_tag = sizeof tags / sizeof * tags;
++static const unsigned scratchpad_mask = 1u << scratchpad_tag;
++
+ static const Rule rules[] = {
+ 	/* xprop(1):
+ 	 *	WM_CLASS(STRING) = instance, class
+@@ -78,8 +82,8 @@
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+ 	{ MODKEY,                       XK_space,  setlayout,      {0} },
+ 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
+-	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
+-	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
++	{ MODKEY,                       XK_0,      view,           {.ui = ~scratchpad_mask } },
++	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~scratchpad_mask } },
+ 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
+ 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
+ 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
+@@ -94,6 +98,9 @@
+ 	TAGKEYS(                        XK_8,                      7)
+ 	TAGKEYS(                        XK_9,                      8)
+ 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
++	{ MODKEY,                       XK_minus, scratchpad_show, {0} },
++	{ MODKEY|ShiftMask,             XK_minus, scratchpad_hide, {0} },
++	{ MODKEY,                       XK_equal,scratchpad_remove,{0} },
+ };
+ 
+ /* button definitions */
+diff '--color=auto' --unified --recursive --text dwm-6.2/dwm.c dwm/dwm.c
+--- dwm-6.2/dwm.c	2019-02-02 16:55:28.000000000 +0400
++++ dwm/dwm.c	2019-10-07 15:47:19.289387434 +0400
+@@ -194,6 +194,12 @@
+ static void restack(Monitor *m);
+ static void run(void);
+ static void scan(void);
++static void scratchpad_hide ();
++static _Bool scratchpad_last_showed_is_killed (void);
++static void scratchpad_remove ();
++static void scratchpad_show ();
++static void scratchpad_show_client (Client * c);
++static void scratchpad_show_first (void);
+ static int sendevent(Client *c, Atom proto);
+ static void sendmon(Client *c, Monitor *m);
+ static void setclientstate(Client *c, long state);
+@@ -267,6 +273,7 @@
+ static Drw *drw;
+ static Monitor *mons, *selmon;
+ static Window root, wmcheckwin;
++static Client * scratchpad_last_showed = NULL;
+ 
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+@@ -1407,6 +1414,97 @@
+ 	}
+ }
+ 
++static void scratchpad_hide ()
++{
++	if (selmon -> sel)
++	{
++		selmon -> sel -> tags = scratchpad_mask;
++		focus(NULL);
++		arrange(selmon);
++	}
++}
++
++static _Bool scratchpad_last_showed_is_killed (void)
++{
++	_Bool killed = 1;
++	for (Client * c = selmon -> clients; c != NULL; c = c -> next)
++	{
++		if (c == scratchpad_last_showed)
++		{
++			killed = 0;
++			break;
++		}
++	}
++	return killed;
++}
++
++static void scratchpad_remove ()
++{
++	if (selmon -> sel && scratchpad_last_showed != NULL && selmon -> sel == scratchpad_last_showed)
++		scratchpad_last_showed = NULL;
++}
++
++static void scratchpad_show ()
++{
++	if (scratchpad_last_showed == NULL || scratchpad_last_showed_is_killed ())
++		scratchpad_show_first ();
++	else
++	{
++		if (scratchpad_last_showed -> tags != scratchpad_mask)
++		{
++			scratchpad_last_showed -> tags = scratchpad_mask;
++			focus(NULL);
++			arrange(selmon);
++		}
++		else
++		{
++			_Bool found_current = 0;
++			_Bool found_next = 0;
++			for (Client * c = selmon -> clients; c != NULL; c = c -> next)
++			{
++				if (found_current == 0)
++				{
++					if (c == scratchpad_last_showed)
++					{
++						found_current = 1;
++						continue;
++					}
++				}
++				else
++				{
++					if (c -> tags == scratchpad_mask)
++					{
++						found_next = 1;
++						scratchpad_show_client (c);
++						break;
++					}
++				}
++			}
++			if (found_next == 0) scratchpad_show_first ();
++		}
++	}
++}
++
++static void scratchpad_show_client (Client * c)
++{
++	scratchpad_last_showed = c;
++	c -> tags = selmon->tagset[selmon->seltags];
++	focus(NULL);
++	arrange(selmon);
++}
++
++static void scratchpad_show_first (void)
++{
++	for (Client * c = selmon -> clients; c != NULL; c = c -> next)
++	{
++		if (c -> tags == scratchpad_mask)
++		{
++			scratchpad_show_client (c);
++			break;
++		}
++	}
++}
++
+ void
+ sendmon(Client *c, Monitor *m)
+ {
