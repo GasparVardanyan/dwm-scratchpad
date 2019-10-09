@@ -1,5 +1,9 @@
 # dwm-scratchpad
 Patch to enable a scratchpad feature in dwm as in i3wm.
+## interface (dwm.c)
+- **static void scratchpad_hide ();** - *move selected window to scratchpad*
+- **static void scratchpad_remove ();** - *remove selected window from scratchpad*
+- **static void scratchpad_show ();** - *restore sequential window from scratchpad*
 ## default keybindings (config.def.h)
 - **MODKEY**, **XK_minus** - *scratchpad_show*
 - **MODKEY|ShiftMask**, **XK_minus** - *scratchpad_hide*
@@ -11,10 +15,6 @@ Patch to enable a scratchpad feature in dwm as in i3wm.
 +	{ MODKEY,                       XK_0,      view,           {.ui = ~scratchpad_mask } },
 +	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~scratchpad_mask } },
 ```
-## interface (dwm.c)
-- **static void scratchpad_hide ();** - *move selected window to scratchpad*
-- **static void scratchpad_remove ();** - *remove selected window from scratchpad*
-- **static void scratchpad_show ();** - *restore sequential window from scratchpad*
 ## variables to be declared in config.h (config.def.h)
 - **static const unsigned scratchpad_mask = 1u << sizeof tags / sizeof * tags;** - *scratchpad's tag mask*
 ## other functions (dwm.c)
