@@ -2,7 +2,7 @@
 Patch to enable a scratchpad feature in dwm as in i3wm.
 
 ## interface (dwm.c)
-- **# define scratchpad_mask (1u << sizeof tags / sizeof * tags)** - *macro that can be used in config.h*
+- **# define SCRATCHPAD_MASK (1u << sizeof tags / sizeof * tags)** - *macro that can be used in config.h*
 - **static void scratchpad_hide ();** - *move selected window to scratchpad*
 - **static void scratchpad_remove ();** - *remove selected window from scratchpad*
 - **static void scratchpad_show ();** - *restore sequential window from scratchpad*
@@ -14,16 +14,30 @@ Patch to enable a scratchpad feature in dwm as in i3wm.
 
 ## changes in dwm.c
 ```diff
+@@ -269,11 +275,15 @@ static Drw *drw;
+ static Monitor *mons, *selmon;
+ static Window root, wmcheckwin;
+
++/* scratchpad */
++# define SCRATCHPAD_MASK (1u << sizeof tags / sizeof * tags)
++static Client * scratchpad_last_showed = NULL;
++
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+
  /* compile-time check if all tags fit into an unsigned int bit array. */
 -struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 +struct NumTags { char limitexceeded[LENGTH(tags) > 30 ? -1 : 1]; };
 
-@@ -309,7 +319,7 @@ applyrules(Client *c)
+ /* function implementations */
+ void
+@@ -309,7 +319,8 @@ applyrules(Client *c)
  		XFree(ch.res_class);
  	if (ch.res_name)
  		XFree(ch.res_name);
 -	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
-+	c->tags = c->tags & (TAGMASK | scratchpad_mask) ? c->tags & (TAGMASK | scratchpad_mask) : c->mon->tagset[c->mon->seltags];
++	if (c->tags != SCRATCHPAD_MASK)
++		c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
  }
 
  int

@@ -13,7 +13,7 @@ index 1c0b587..48cf601 100644
  
  /* button definitions */
 diff --git a/dwm.c b/dwm.c
-index 9fd0286..1cfa0a2 100644
+index 9fd0286..03c4001 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -195,6 +195,12 @@ static void resizemouse(const Arg *arg);
@@ -34,7 +34,7 @@ index 9fd0286..1cfa0a2 100644
  static Window root, wmcheckwin;
  
 +/* scratchpad */
-+# define scratchpad_mask (1u << sizeof tags / sizeof * tags)
++# define SCRATCHPAD_MASK (1u << sizeof tags / sizeof * tags)
 +static Client * scratchpad_last_showed = NULL;
 +
  /* configuration, allows nested code to access above variables */
@@ -46,16 +46,17 @@ index 9fd0286..1cfa0a2 100644
  
  /* function implementations */
  void
-@@ -309,7 +319,7 @@ applyrules(Client *c)
+@@ -309,7 +319,8 @@ applyrules(Client *c)
  		XFree(ch.res_class);
  	if (ch.res_name)
  		XFree(ch.res_name);
 -	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
-+	c->tags = c->tags & (TAGMASK | scratchpad_mask) ? c->tags & (TAGMASK | scratchpad_mask) : c->mon->tagset[c->mon->seltags];
++	if (c->tags != SCRATCHPAD_MASK)
++		c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
  }
  
  int
-@@ -1408,6 +1418,97 @@ scan(void)
+@@ -1408,6 +1419,97 @@ scan(void)
  	}
  }
  
@@ -63,7 +64,7 @@ index 9fd0286..1cfa0a2 100644
 +{
 +	if (selmon -> sel)
 +	{
-+		selmon -> sel -> tags = scratchpad_mask;
++		selmon -> sel -> tags = SCRATCHPAD_MASK;
 +		focus(NULL);
 +		arrange(selmon);
 +	}
@@ -95,9 +96,9 @@ index 9fd0286..1cfa0a2 100644
 +		scratchpad_show_first ();
 +	else
 +	{
-+		if (scratchpad_last_showed -> tags != scratchpad_mask)
++		if (scratchpad_last_showed -> tags != SCRATCHPAD_MASK)
 +		{
-+			scratchpad_last_showed -> tags = scratchpad_mask;
++			scratchpad_last_showed -> tags = SCRATCHPAD_MASK;
 +			focus(NULL);
 +			arrange(selmon);
 +		}
@@ -117,7 +118,7 @@ index 9fd0286..1cfa0a2 100644
 +				}
 +				else
 +				{
-+					if (c -> tags == scratchpad_mask)
++					if (c -> tags == SCRATCHPAD_MASK)
 +					{
 +						found_next = 1;
 +						scratchpad_show_client (c);
@@ -142,7 +143,7 @@ index 9fd0286..1cfa0a2 100644
 +{
 +	for (Client * c = selmon -> clients; c != NULL; c = c -> next)
 +	{
-+		if (c -> tags == scratchpad_mask)
++		if (c -> tags == SCRATCHPAD_MASK)
 +		{
 +			scratchpad_show_client (c);
 +			break;
