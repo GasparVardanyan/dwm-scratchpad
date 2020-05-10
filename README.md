@@ -12,7 +12,12 @@ Patch to enable a scratchpad feature in dwm as in i3wm.
 - **MODKEY|ShiftMask**, **XK_minus** - *scratchpad_hide*
 - **MODKEY**, **XK_equal** - *scratchpad_remove*
 
-## changes in dwm.c
+## other functions (dwm.c)
+- static _Bool scratchpad_last_showed_is_killed (void);
+- static void scratchpad_show_client (Client * c);
+- static void scratchpad_show_first (void);
+
+## other changes in dwm.c
 ```diff
 @@ -269,11 +275,15 @@ static Drw *drw;
  static Monitor *mons, *selmon;
@@ -43,15 +48,7 @@ Patch to enable a scratchpad feature in dwm as in i3wm.
  int
 ```
 
-## other functions (dwm.c)
-- static _Bool scratchpad_last_showed_is_killed (void);
-- static void scratchpad_show_client (Client * c);
-- static void scratchpad_show_first (void);
-
-## other variables (dwm.c)
-- static Client * scratchpad_last_showed = NULL;
-
-## start a window scratchpad?
+## start a window in scratchpad?
 Try to add something like this in **rules** (config.h):
 ```c
 { NULL, NULL, "hidden", scratchpad_mask, 0, -1 },
