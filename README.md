@@ -51,7 +51,7 @@ Patch to enable a scratchpad feature in dwm as in i3wm.
 ## start a window in scratchpad?
 Try to add something like this in **rules** (config.h):
 ```c
-{ NULL, NULL, "hidden", scratchpad_mask, 0, -1 },
+{ NULL, NULL, "hidden", SCRATCHPAD_MASK, 0, -1 },
 ```
 
 And launch something like this:
