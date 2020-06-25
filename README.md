@@ -58,3 +58,6 @@ And launch something like this:
 ```
 st -t hidden
 ```
+
+## doesn't conflict with the namedscratchpads patch
+namedscratchpads is a great scratchpad implementation, and this patch doesn't conflict with it. Why to use both this and the namedscratchpads patches? Because though they're both named 'scratchpad' patches, they do different things. This patch doesn't implement namedscratchpads' functionality to avoid bloating and keep simple.
