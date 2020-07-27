@@ -13,7 +13,7 @@ index 1c0b587..48cf601 100644
  
  /* button definitions */
 diff --git a/dwm.c b/dwm.c
-index 9fd0286..03c4001 100644
+index 9fd0286..c647493 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -195,6 +195,12 @@ static void resizemouse(const Arg *arg);
@@ -56,7 +56,7 @@ index 9fd0286..03c4001 100644
  }
  
  int
-@@ -1408,6 +1419,97 @@ scan(void)
+@@ -1408,6 +1419,98 @@ scan(void)
  	}
  }
  
@@ -65,6 +65,7 @@ index 9fd0286..03c4001 100644
 +	if (selmon -> sel)
 +	{
 +		selmon -> sel -> tags = SCRATCHPAD_MASK;
++		selmon -> sel -> isfloating = 1;
 +		focus(NULL);
 +		arrange(selmon);
 +	}
@@ -154,3 +155,12 @@ index 9fd0286..03c4001 100644
  void
  sendmon(Client *c, Monitor *m)
  {
+@@ -1781,6 +1884,8 @@ unmanage(Client *c, int destroyed)
+ 		XSetErrorHandler(xerror);
+ 		XUngrabServer(dpy);
+ 	}
++	if (scratchpad_last_showed == c)
++		scratchpad_last_showed = NULL;
+ 	free(c);
+ 	focus(NULL);
+ 	updateclientlist();
