@@ -13,14 +13,14 @@ Patch to enable a scratchpad feature in dwm as in i3wm.
 - **MODKEY**, **XK_equal** - *scratchpad_remove*
 
 ## start a window in scratchpad?
-Try to add something like this in **rules** (config.h):
+Add something like this in **rules** (config.h):
 ```c
-{ NULL, NULL, "hidden", SCRATCHPAD_MASK, 0, -1 },
+{ NULL, "hidden", NULL, SCRATCHPAD_MASK, 0, -1 },
 ```
 
 And launch something like this:
 ```
-st -t hidden
+st -n hidden
 ```
 
 ## doesn't conflict with the namedscratchpads patch
